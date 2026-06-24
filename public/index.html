@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uddevalla Radar</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+  <div class="min-h-screen">
+    <!-- Header -->
+    <div class="bg-blue-600 text-white p-8">
+      <h1 class="text-4xl font-bold">Uddevalla Radar</h1>
+      <p class="text-blue-100 mt-2">Nyhetsbevakning och analys för Uddevalla kommun</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto p-8">
+      <!-- Input Section -->
+      <div class="bg-white rounded-lg shadow p-6 mb-8">
+        <h2 class="text-2xl font-bold mb-4">Vad ska vi söka på?</h2>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Sökord (separera med komma)</label>
+            <input 
+              type="text" 
+              id="searchInput" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="t.ex. vägar, skola, miljö, kris"
+              value="Uddevalla, vägar, skola, kris, miljö"
+            >
+          </div>
+          <button 
+            id="analyzeBtn"
+            class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition"
+          >
+            🔍 Analysera nu
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading" class="hidden text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p class="text-gray-600 mt-4">Söker igenom nyheter...</p>
+      </div>
+
+      <!-- Results Section -->
+      <div id="results" class="hidden space-y-8">
+        <!-- Articles -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h2 class="text-2xl font-bold mb-4" id="articleCount"></h2>
+          <div id="articlesList" class="space-y-4"></div>
+        </div>
+
+        <!-- Analysis -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h2 class="text-2xl font-bold mb-4">Claudes Analys</h2>
+          <div id="analysis" class="whitespace-pre-wrap text-gray-700 leading-relaxed"></div>
+        </div>
+      </div>
+      <!-- Export Button -->
+      <div class="text-center mt-8">
+        <button 
+          id="exportBtn"
+          class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 transition"
+        >
+          📥 Exportera som HTML
+        </button>
+      </div>
+
+      <!-- Error State -->
+      <div id="error" class="hidden bg-red-50 border border-red-200 rounded-lg p-6 text-red-700"></div>
+    </div>
+  </div>
+
+  <script>
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const searchInput = document.getElementById('searchInput');
+    const loading = document.getElementById('loading');
+    const results = document.getElementById('results');
+    const error = document.getElementById('error');
+    const articlesList = document.getElementById('articlesList');
+    const analysis = document.getElementById('analysis');
+    const articleCount = document.getElementById('articleCount');
+    const exportBtn = document.getElementById('exportBtn');
+
+
+    analyzeBtn.addEventListener('click', async () => {
+      const searchTerms = searchInput.value
+        .split(',')
+        .map(t => t.trim())
+        .filter(t => t.length > 0);
+
+      if (searchTerms.length === 0) {
+        error.textContent = 'Vänligen skriv minst ett sökord';
+        error.classList.remove('hidden');
+        return;
+      }
+
+      loading.classList.remove('hidden');
+      results.classList.add('hidden');
+      error.classList.add('hidden');
+
+      try {
+        const response = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ searchTerms })
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Okänt fel');
+        }
+
+        const data = await response.json();
+
+        articleCount.textContent = data.articles.length + ' artiklar från idag';
+        articlesList.innerHTML = data.articles.map(a => `
+          <div class="border-l-4 border-blue-500 pl-4 py-2">
+            <h3 class="font-bold text-gray-900">${a.title}</h3>
+            <p class="text-sm text-gray-600 mt-1">${a.description}</p>
+            <div class="flex justify-between mt-2">
+              <span class="text-xs text-gray-500">Källa: ${a.source}</span>
+              <a href="${a.link}" target="_blank" class="text-xs text-blue-600 hover:underline">Läs mer →</a>
+            </div>
+          </div>
+        `).join('');
+
+        analysis.textContent = data.analysis;
+     currentData = { 
+  articles: data.articles, 
+  analysis: data.analysis, 
+  searchTerms: searchTerms
+};
+        loading.classList.add('hidden');
+        results.classList.remove('hidden');
+      } catch (e) {
+        error.textContent = '❌ Fel: ' + e.message;
+        error.classList.remove('hidden');
+        loading.classList.add('hidden');
+      }
+    }); 
+
+
+    // Kör första analysen när sidan laddas
+        let currentData = null;
+
+    // Spara data när analysen är klar
+    const originalAnalyze = analyzeBtn.addEventListener.bind(analyzeBtn);
+    
+    // Uppdatera denna del i try-blocket (efter `analysis.textContent = data.analysis;`):
+    // Lägg till:
+    
+
+    window.addEventListener('load', () => {
+      analyzeBtn.click();
+    });
+    exportBtn.addEventListener('click', async () => {
+  if (!currentData) return;
+
+  try {
+    const response = await fetch('/api/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(currentData)
+    });
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'uddevalla-radar-' + new Date().toISOString().split('T')[0] + '.html';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (e) {
+    error.textContent = '❌ Export-fel: ' + e.message;
+    error.classList.remove('hidden');
+  }
+});
+
+  </script>
+</body>
+</html>
