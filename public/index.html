@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Uddevalla Radar</title>
+  <title>Radar</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50">
   <div class="min-h-screen">
     <!-- Header -->
     <div class="bg-blue-600 text-white p-8">
-      <h1 class="text-4xl font-bold">Uddevalla Radar</h1>
-      <p class="text-blue-100 mt-2">Nyhetsbevakning och analys för Uddevalla kommun</p>
+      <h1 class="text-4xl font-bold">Radar</h1>
+      <p class="text-blue-100 mt-2">Nyhetsbevakning och analys</p>
     </div>
 
     <!-- Main Content -->
@@ -171,7 +171,7 @@
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'uddevalla-radar-' + new Date().toISOString().split('T')[0] + '.html';
+    a.download = 'radar-' + new Date().toISOString().split('T')[0] + '.html';
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
