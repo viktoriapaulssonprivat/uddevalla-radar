@@ -50,7 +50,17 @@ async function fetchFeed(url) {
   }
 }
 
+let articlesInMemory = [];
+
 function loadArticles() {
+    return articlesInMemory;
+}
+
+function saveArticles(articles) {
+ articlesInMemory = articles;
+}
+
+/*function loadArticles() {
   if (!fs.existsSync(ARTICLES_FILE)) return [];
   const data = fs.readFileSync(ARTICLES_FILE, 'utf8');
   return JSON.parse(data);
@@ -58,7 +68,7 @@ function loadArticles() {
 
 function saveArticles(articles) {
   fs.writeFileSync(ARTICLES_FILE, JSON.stringify(articles, null, 2), 'utf8');
-}
+}*/
 
 async function analyzeWithClaude(todayArticles, searchTerms) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
