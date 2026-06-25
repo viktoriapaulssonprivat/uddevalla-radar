@@ -71,7 +71,32 @@ async function analyzeWithClaude(todayArticles, searchTerms) {
     a.title + ' (' + a.source + ')\n' + a.description + '\n[Länk: ' + a.link + ']'
   ).join('\n\n');
 
-  const prompt = 'Du ar en kommunikationsradgivare for en svensk kommun.\n\nHar ar artiklar fran idag som namner dessa sokord: ' + searchTerms.join(', ') + '\n\n' + articlesText + '\n\nAnalysera:\n1. Vilka ar de viktigaste nyheterna?\n2. Finns det något som kraver ett proaktivt svar fran kommunen?\n3. Vilken ton har artiklarna (positiv/negativ/neutral)?\n4. Foreslå ett kort holding statement (2-3 meningar) som kommunen kan anvanda om de blir tillfrågade. Inkludera länkarna till artiklarna i ditt svar.\n\nSvara pa svenska.';
+  //const prompt = 'Du ar en kommunikationsradgivare for en svensk kommun.\n\nHar ar artiklar fran idag som namner dessa sokord: ' + searchTerms.join(', ') + '\n\n' + articlesText + '\n\nAnalysera:\n1. Vilka ar de viktigaste nyheterna?\n2. Finns det något som kraver ett proaktivt svar fran kommunen?\n3. Vilken ton har artiklarna (positiv/negativ/neutral)?\n4. Foreslå ett kort holding statement (2-3 meningar) som kommunen kan anvanda om de blir tillfrågade. Inkludera länkarna till artiklarna i ditt svar.\n\nSvara pa svenska.';
+    const prompt = `Du är en senior kommunikationsrådgivare och medieanalytiker för Uddevalla kommun.
+
+Här är dagens insamlade medieartiklar (från lokala och regionala nyhetsflöden):
+${articlesText}
+
+De definierade bevakningsområdena är: ${searchTerms.join(', ')}.
+
+Gör en strategisk nyhetsanalys utifrån följande instruktioner:
+
+1. SEMANTISK KATEGORISERING (Leta efter resonemang, inte bara exakta ord):
+- Sortera artiklarna under dina bevakningsområden baserat på textens faktiska sammanhang. 
+- Exempelvis ska artiklar om partidebatter, motioner eller beslut i kommunhuset kategoriseras som "Politik & Styrning", även om ordet "politik" saknas. Artiklar om vägarbeten, broar, eller kollektivtrafik ska till "Infrastruktur".
+
+2. MEDIELOGIK & RISKBEDÖMNING:
+- Identifiera artiklarnas ton (Positiv, Negativ eller Neutral).
+- Analysera den underliggande konflikten: Finns det ett medborgarperspektiv, en kritik mot kommunen, eller en potentiell förtroenderisk (t.ex. kring trygghet eller ekonomi)?
+
+3. SVARS-ASSISTENT & REKOMMENDATION:
+- Bedöm om artikeln kräver ett proaktivt eller reaktivt svar från kommunen (Ja/Nej) och motivera varför.
+- Formulera ett kort "Holding Statement" (2-3 meningar) för de artiklar som innebär en kommunikationsrisk. Detta ska fungera som ett första officiellt svar till media eller medborgare.
+
+Presentera analysen i ett strukturerat, lättläst format med tydliga rubriker och Markdown-tabeller för ton och svarsbehov. Inkludera de korrekta källänkarna i din sammanfattning.
+
+Svara på svenska.`;''
+
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -83,7 +108,7 @@ async function analyzeWithClaude(todayArticles, searchTerms) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1024,
+        max_tokens: 4000,
         messages: [
           {
             role: 'user',
