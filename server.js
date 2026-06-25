@@ -279,6 +279,11 @@ app.post('/api/export', (req, res) => {
 });
 const PORT = process.env.PORT || 3000;
 
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
+
 app.listen(PORT, () => {
   console.log('Uddevalla Radar kör på http://localhost:' + PORT);
 });
